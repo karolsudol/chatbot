@@ -59,12 +59,14 @@ pub async fn login_form(
     Form(log_in): Form<LogIn>,
 ) -> Result<Redirect, LogInError> {
     // Verify password
-    let user = sqlx::query_as!(
+    let user = match sqlx::query_as!(
         User,
         "SELECT users.*, settings.openai_api_key FROM users LEFT JOIN settings ON settings.user_id=users.id WHERE users.email = $1",
         log_in.email,
-    ).fetch_one(&*state.pool).await
-    .map_err(|_| LogInError::InvalidCredentials)?;
+    ).fetch_one(&*state.pool).await {
+        Ok(user) => user,
+        Err(err) => return Err(LogInError::DatabaseError(err.to_string())),
+    };
 
     if user.password != log_in.password {
         return Err(LogInError::InvalidCredentials);

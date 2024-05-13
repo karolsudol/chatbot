@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use sqlx::sqlite::SqlitePool;
-use sqlx::{Row, Sqlite, Transaction};
+use sqlx::{Sqlite, Transaction};
 
 use super::model::{Chat, ChatMessagePair};
 

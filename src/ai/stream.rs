@@ -8,7 +8,6 @@ use tokio_stream::StreamExt;
 
 use crate::data::model::ChatMessagePair;
 
-// Define a struct to represent a model.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Model {
     pub id: String,
@@ -17,7 +16,6 @@ pub struct Model {
     pub owned_by: String,
 }
 
-// Define a struct to represent the list of models.
 #[derive(Serialize, Deserialize, Debug)]
 struct ModelList {
     object: String,
@@ -55,9 +53,7 @@ pub async fn generate_sse_stream(
     messages: Vec<ChatMessagePair>,
     sender: mpsc::Sender<Result<GenerationEvent, Error>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // Your OpenAI API key
 
-    // The API endpoint for chat completions
     let url = "https://api.openai.com/v1/chat/completions";
 
     let system_message = json!({"role": "system", "content": "You are a helpful assistant."});
@@ -121,8 +117,6 @@ pub async fn generate_sse_stream(
                     println!("Stream completed.");
                     stream.close();
                     if sender
-                        // .send(Ok(Event::default()
-                        //     .data(r#"<div id="sse-listener" hx-swap-oob="true"></div>"#)))
                         .send(Ok(GenerationEvent::End(
                             r#"<div id="sse-listener" hx-swap-oob="true"></div>"#.to_string(),
                         )))
@@ -135,12 +129,6 @@ pub async fn generate_sse_stream(
                 } else {
                     let m: Value = serde_json::from_str(&message.data).unwrap();
                     if let Some(text) = m["choices"][0]["delta"]["content"].as_str() {
-                        // let text = text.to_string().replace(' ', "&nbsp;");
-                        // // print debug text
-                        // println!("text: {:?}", text);
-                        // println!("text: {}", text);
-
-                        // if sender.send(Ok(Event::default().data(text))).await.is_err() {
                         if sender
                             .send(Ok(GenerationEvent::Text(text.to_string())))
                             .await
@@ -158,7 +146,6 @@ pub async fn generate_sse_stream(
                     break; // Receiver has dropped, stop sending.
                 }
             }
-            _ => (),
         }
     }
 
